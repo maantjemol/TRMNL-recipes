@@ -1,0 +1,22 @@
+---
+strategy: polling
+no_screen_padding: "no"
+dark_mode: "no"
+static_data: ""
+polling_verb: get
+polling_url: https://api.planningcenteronline.com/services/v2/service_types/{{service_id}}/plans?order=sort_date&include=my_schedules&filter=future
+polling_headers: Authorization=Basic {{pco_key}}
+id: 75230
+custom_fields:
+  - keyname: service_id
+    field_type: string
+    name: PCO service ID
+    description: Your PCO service ID
+    help_text: Can be found in PCO
+  - keyname: pco_key
+    field_type: string
+    name: PCO API Key
+    description: Your PCO client_id and client_secret base64 encoded
+    help_text: client_id:client_secret base64 encoded, e.g. Y2xpZW50X2lkOmNsaWVudF9zZWNyZXQ=
+name: Planningcenter
+refresh_interval: 1440

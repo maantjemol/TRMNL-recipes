@@ -1,0 +1,25 @@
+<div class="layout">
+  <div class="list" data-list-limit="true" data-list-max-height="340" data-list-hidden-count="true" data-list-max-columns="1">
+    <span class="label">Upcoming services</span>
+    {% for plan in included %}
+     <div class="item">
+      <div class="meta">
+        <span class="index"></span>
+      </div>
+      <div class="content">
+        <span class="title title--small">{{ plan.attributes.team_position_name }} - {{ plan.attributes.service_type_name }}</span>
+        <span class="description">Playing in the {{plan.attributes.team_name}} in {{plan.attributes.organization_name}}</span>
+        <div class="flex gap--xsmall">
+          <span class="label label--small label--underline">{{ plan.attributes.dates }}</span>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+  </div>
+</div>
+
+<div class="title_bar">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" width="1em" height="1em" class="tw-size-7.5"><path fill="url(#services_svg__a)" d="M15.17 0c-12.002 0-15 3-15 15s2.998 15 15 15 15-2.998 15-15-3-15-15-15"></path><path fill="#fff" d="M8.346 11.446a1.59 1.59 0 1 0 0-3.18 1.59 1.59 0 0 0 0 3.18M8.346 16.618a1.59 1.59 0 1 0 0-3.18 1.59 1.59 0 0 0 0 3.18M8.346 21.793a1.59 1.59 0 1 0 0-3.18 1.59 1.59 0 0 0 0 3.18M22.706 10.564a.73.73 0 0 1-.73.729h-9.585a.73.73 0 0 1-.729-.73V9.148c0-.403.326-.729.729-.729h9.584c.402 0 .728.326.728.729zM11.666 13.907c0-.173.14-.313.313-.313h10.415c.173 0 .313.14.313.313v2.25c0 .172-.14.313-.313.313H11.98a.313.313 0 0 1-.313-.313zM11.666 19.078c0-.172.14-.312.313-.312h10.415c.173 0 .313.14.313.312v2.25c0 .173-.14.313-.313.313H11.98a.313.313 0 0 1-.313-.312z"></path><defs><linearGradient id="services_svg__a" x1="-8.83" x2="15.17" y1="15" y2="39" gradientUnits="userSpaceOnUse"><stop stop-color="#6BB23D"></stop><stop offset="0.999" stop-color="#659630"></stop></linearGradient></defs></svg>
+  <span class="title">Planning Center</span>
+  <span class="instance">{{plan.attributes.organization_name}}</span>
+</div>

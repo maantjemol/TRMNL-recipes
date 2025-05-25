@@ -1,0 +1,17 @@
+---
+strategy: polling
+no_screen_padding: 'no'
+dark_mode: 'no'
+static_data: ''
+polling_verb: get
+polling_url: https://workers-playground-cool-snowflake-fc25.maantjemol.workers.dev/waves
+polling_headers: ''
+id: 69014
+custom_fields:
+- keyname: tz
+  field_type: time_zone
+  placeholder: Europe/Brussels
+  name: Timezone
+  description: Where are you located?
+name: Waves
+refresh_interval: 1440

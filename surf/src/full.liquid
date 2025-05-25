@@ -1,0 +1,177 @@
+<!-- import Highcharts + Chartkick libraries -->
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartkick@5.0.1/dist/chartkick.min.js"></script>
+<script src=" https://cdn.jsdelivr.net/npm/luxon@3.6.1/build/global/luxon.min.js "></script>
+
+<!-- markup with empty, ID'd element for chart injection -->
+<div class="view view--full">
+  <div class="layout layout--col gap--space-between">
+    <div class="grid grid--cols-3">
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="value value--tnums" id="maxHeight">25,388</span>
+          <span class="label">Current Wave Height</span>
+        </div>
+      </div>
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="value value--tnums" id="sunrise">{{ sunrise }}</span>
+          <span class="label">Sunrise</span>
+        </div>
+      </div>
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="value value--tnums" id="sunser">{{ sunset }}</span>
+          <span class="label">Sunset</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="chart-123" style="width: 100%"></div>
+  </div>
+
+  <div class="title_bar">
+    <img class="image" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXdhdmVzLWljb24gbHVjaWRlLXdhdmVzIj48cGF0aCBkPSJNMiA2Yy42LjUgMS4yIDEgMi41IDFDNyA3IDcgNSA5LjUgNWMyLjYgMCAyLjQgMiA1IDIgMi41IDAgMi41LTIgNS0yIDEuMyAwIDEuOS41IDIuNSAxIi8+PHBhdGggZD0iTTIgMTJjLjYuNSAxLjIgMSAyLjUgMSAyLjUgMCAyLjUtMiA1LTIgMi42IDAgMi40IDIgNSAyIDIuNSAwIDIuNS0yIDUtMiAxLjMgMCAxLjkuNSAyLjUgMSIvPjxwYXRoIGQ9Ik0yIDE4Yy42LjUgMS4yIDEgMi41IDEgMi41IDAgMi41LTIgNS0yIDIuNiAwIDIuNCAyIDUgMiAyLjUgMCAyLjUtMiA1LTIgMS4zIDAgMS45LjUgMi41IDEiLz48L3N2Zz4=" />
+    <span class="title">Wave height</span>
+    <span class="instance">{{model_longname}}</span>
+  </div>
+</div>
+
+<script type="text/javascript">
+  const heights = [
+    {% for height in WVHGT %}
+    {{height}},
+    {% endfor %}
+  ]
+
+  console.log(heights)
+
+  let data = heights.map((height, i) => {
+    if (height === null) {
+      // Interpolate missing values
+      height = heights[i - 1] || 0; // Use previous value or 0 if it's the first entry
+      if (i > 0 && heights[i - 1] === null) {
+        height = heights[i + 1] || 0; // If previous was also null, use next value
+      }
+    }
+    const date = new Date("{{ initdate }}");
+    // Add a hour for each entry
+    date.setHours(date.getHours() + i);
+    return [date, height]
+  })
+
+  const lastUpdate = new Date("{{ update_last }}");
+
+  data = data.slice(0, 56)
+  console.log(data)
+
+  // Amsterdam timezone
+  function formatManualLocalTime(ts, offset) {
+      function isLeap(y){return y%4===0&&(y%100!==0||y%400===0);}
+      function dim(y,m){return[31,isLeap(y)?29:28,31,30,31,30,31,31,30,31,30,31][m-1];}
+      const totalSec=ts+offset,totalMin=Math.floor(totalSec/60),min=totalMin%60,hr=Math.floor(totalMin/60);
+      let roundedHr=hr%24+(min>=30?1:0),carry=roundedHr>=24?1:0;roundedHr%=24;
+      let days=Math.floor(hr/24)+carry,y=1970;
+      while(true){const d=isLeap(y)?366:365;if(days<d)break;days-=d;++y;}
+      let m=1;while(true){const d=dim(y,m);if(days<d)break;days-=d;++m;}
+      const D=days+1,p=n=>n.toString().padStart(2,'0');
+      return `${y}-${p(m)}-${p(D)}T${p(roundedHr)}:00`;
+    };
+
+    const currentDateTime = formatManualLocalTime({{trmnl.system.timestamp_utc}}, {{trmnl.user.utc_offset}});
+
+
+  // Set max , min and average values
+  let shownHeights = heights.slice(0, 56)
+  // document.getElementById("minHeight").innerHTML = `${Math.min(...shownHeights)}m`;
+  // document.getElementById("avgHeight").innerHTML = `${(shownHeights.reduce((a, b) => a + b, 0) / shownHeights.length).toFixed(2)}m`;
+  
+  // get current wave height by searching the closest date to the current time
+  const currentHeight = data.reduce((prev, curr) => {
+    return (Math.abs(curr[0] - lastUpdate) < Math.abs(prev[0] - lastUpdate) ? curr : prev);
+  });
+  
+  document.getElementById("maxHeight").innerHTML = `${currentHeight[1]}m`;
+
+  // recommended configs to achieve the TRMNL Framework aesthetic
+  var createChart = function() {
+    new Chartkick["LineChart"](
+    "chart-123",
+    data,
+    {
+      adapter: "highcharts", // chartjs, google, etc available
+      prefix: "",
+      suffix: "m",
+      thousands: ".",
+      points: true,
+      colors: ["black"],
+      curve: true,
+      library: {
+        chart: {
+          height: 260
+        },
+        plotOptions: {
+          series: {
+            animation: false,
+            lineWidth: 4
+          }
+        },
+        yAxis: {
+          labels: {
+            style: {
+              fontSize: "16px",
+              color:"#000000"
+            }
+          },
+          gridLineDashStyle: "shortdot",
+          gridLineWidth: 1,
+          gridLineColor: "#000000",
+          tickAmount: 5
+        },
+        xAxis: {
+          type: "daytime",
+          labels: {
+            style: {
+              fontSize: "16px",
+              color: "#000000"
+            }
+          },
+          plotLines: [{
+            color: '#333333',
+            width: 1.2,
+            value: currentDateTime,
+            zIndex: 5,
+            dashStyle: 'Line',
+            label: {
+              text: 'Now',
+              rotation: 0,
+              y: 22,
+              style: { 
+                color: '#333333',
+                fontSize: '16px',
+                fontFamily: "NicoPups",
+              }
+            }
+          }],
+          lineWidth: 0,
+          gridLineDashStyle: "dot",
+          tickWidth: 1,
+          tickLength: 0,
+          gridLineWidth: 1,
+          gridLineColor: "#000000",
+          tickPixelInterval: 10
+        }
+      }
+    });
+  };
+
+  // ensure your chart loads before plugin render is generated
+  if ("Chartkick" in window) {
+    createChart();
+  } else {
+    window.addEventListener("chartkick:load", createChart, true);
+  }
+</script>
